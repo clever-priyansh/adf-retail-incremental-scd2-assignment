@@ -199,7 +199,14 @@
 			{
 				"name": "NB_SCD_Type2_Processing",
 				"type": "DatabricksNotebook",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "SP_Update_Watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -207,7 +214,18 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/updazvmnag_1777788721458@npupgradassessment.onmicrosoft.com/NB_SCD_Type2_Customer_Dimension",
+					"baseParameters": {
+						"raw_input_path": "@concat('abfss://raw@stretailkartrawcurated.dfs.core.windows.net/', pipeline().parameters.targetFolderPath)",
+						"curated_output_path": "@string('abfss://curated@stretailkartrawcurated.dfs.core.windows.net/retail/dim_customer/')"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {
