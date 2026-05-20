@@ -1,0 +1,15 @@
+{
+	"name": "adf-retailkart-priyansh",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "e7066c93-db2e-4d1c-94b1-d1f24fa52c2c",
+		"tenantId": "e0275bc0-33e3-4f43-8688-64d5b044a431"
+	}
+}
