@@ -15,6 +15,10 @@
 			"type": "string",
 			"defaultValue": "https://stretailkartrawcurated.dfs.core.windows.net"
 		},
+		"LS_AzureDatabricks_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0520-063909-y0j9s42q"
+		},
 		"LS_AzureSQL_Retail_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "sqlserver-retailkart-priyansh.database.windows.net"
@@ -62,6 +66,30 @@
 						},
 						"secretName": "adls-storage-key"
 					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureKeyVault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AzureDatabricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-7405607779137232.12.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LS_AzureKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks-access-token"
+					},
+					"existingClusterId": "[parameters('LS_AzureDatabricks_properties_typeProperties_existingClusterId')]"
 				}
 			},
 			"dependsOn": [
@@ -376,6 +404,37 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "NB_SCD_Type2_Processing",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "SP_Update_Watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/updazvmnag_1777788721458@npupgradassessment.onmicrosoft.com/NB_SCD_Type2_Customer_Dimension",
+							"baseParameters": {
+								"raw_input_path": "@concat('abfss://raw@stretailkartrawcurated.dfs.core.windows.net/', pipeline().parameters.targetFolderPath)",
+								"curated_output_path": "@string('abfss://curated@stretailkartrawcurated.dfs.core.windows.net/retail/dim_customer/')"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_AzureDatabricks",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -406,7 +465,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_AzureSQL_Parameterized')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Parquet_Parameterized')]",
-				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSQL_Retail')]"
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSQL_Retail')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureDatabricks')]"
 			]
 		}
 	]
