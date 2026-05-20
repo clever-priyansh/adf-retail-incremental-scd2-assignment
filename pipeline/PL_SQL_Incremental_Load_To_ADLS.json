@@ -17,7 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT last_watermark_value \nFROM dbo.pipeline_watermark \nWHERE source_table_name = '@{pipeline().parameters.sourceTableName}';",
+						"sqlReaderQuery": {
+							"value": "SELECT last_watermark_value \nFROM dbo.pipeline_watermark \nWHERE source_table_name = '@{pipeline().parameters.sourceTableName}';",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -52,7 +55,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT MAX(@{pipeline().parameters.watermarkColumn}) AS new_watermark_value \nFROM @{pipeline().parameters.sourceSchemaName}.@{pipeline().parameters.sourceTableName};",
+						"sqlReaderQuery": {
+							"value": "SELECT MAX(@{pipeline().parameters.watermarkColumn}) AS new_watermark_value \nFROM @{pipeline().parameters.sourceSchemaName}.@{pipeline().parameters.sourceTableName};",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -97,7 +103,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT * FROM @{pipeline().parameters.sourceSchemaName}.@{pipeline().parameters.sourceTableName}\nWHERE @{pipeline().parameters.watermarkColumn} > '@{activity('LK_Old_Watermark').output.firstRow.last_watermark_value}' \nAND @{pipeline().parameters.watermarkColumn} <= '@{activity('LK_New_Watermark').output.firstRow.new_watermark_value}';",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM @{pipeline().parameters.sourceSchemaName}.@{pipeline().parameters.sourceTableName}\nWHERE @{pipeline().parameters.watermarkColumn} > '@{activity('LK_Old_Watermark').output.firstRow.last_watermark_value}' \nAND @{pipeline().parameters.watermarkColumn} <= '@{activity('LK_New_Watermark').output.firstRow.new_watermark_value}';",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -178,11 +187,27 @@
 					"scripts": [
 						{
 							"type": "NonQuery",
-							"text": "UPDATE dbo.pipeline_watermark\nSET last_watermark_value = '@{activity('LK_New_Watermark').output.firstRow.new_watermark_value}'\nWHERE source_table_name = '@{pipeline().parameters.sourceTableName}';"
+							"text": {
+								"value": "UPDATE dbo.pipeline_watermark\nSET last_watermark_value = '@{activity('LK_New_Watermark').output.firstRow.new_watermark_value}'\nWHERE source_table_name = '@{pipeline().parameters.sourceTableName}';",
+								"type": "Expression"
+							}
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
 				}
+			},
+			{
+				"name": "NB_SCD_Type2_Processing",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
 			}
 		],
 		"parameters": {
